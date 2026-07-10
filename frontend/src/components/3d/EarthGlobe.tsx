@@ -2,20 +2,31 @@
 
 import { useRef, useMemo } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Sphere, MeshDistortMaterial, Stars, Html } from "@react-three/drei";
+import { Sphere, Stars, Html, useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { useTheme } from "next-themes";
 import { useWeather } from "@/hooks/useWeatherContext";
 
 export default function EarthGlobe() {
   const meshRef = useRef<THREE.Group>(null);
+  const cloudsRef = useRef<THREE.Mesh>(null);
   const { theme } = useTheme();
   const { location } = useWeather();
   
-  // Rotate the globe slowly
+  // Load high-resolution realistic Earth textures via CDN (with CORS support)
+  const textures = useTexture({
+    day: "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
+    night: "https://unpkg.com/three-globe/example/img/earth-night.jpg",
+    clouds: "https://unpkg.com/three-globe/example/img/earth-clouds.png"
+  });
+
+  // Rotate the globe and clouds slowly at different speeds for high realism
   useFrame((state, delta) => {
     if (meshRef.current) {
-      meshRef.current.rotation.y += delta * 0.05;
+      meshRef.current.rotation.y += delta * 0.015; // Slow natural rotation
+    }
+    if (cloudsRef.current) {
+      cloudsRef.current.rotation.y += delta * 0.022; // Clouds drift slightly faster
     }
   });
 
@@ -27,6 +38,7 @@ export default function EarthGlobe() {
     if (!location) return null;
     
     const lat = location.latitude;
+    // Offset longitude by 90 degrees to align texture seam correctly
     const lon = location.longitude;
 
     const phi = (90 - lat) * (Math.PI / 180);
@@ -41,46 +53,57 @@ export default function EarthGlobe() {
 
   return (
     <group ref={meshRef}>
-      <ambientLight intensity={isDark ? 0.2 : 0.8} />
-      <directionalLight position={[5, 3, 5]} intensity={isDark ? 1 : 2} />
+      {/* Sun / Light sources */}
+      <ambientLight intensity={isDark ? 0.3 : 0.7} />
+      <directionalLight position={[10, 5, 10]} intensity={isDark ? 1.5 : 2.5} castShadow />
       
       {/* Background stars for dark mode */}
-      {isDark && <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />}
+      {isDark && <Stars radius={120} depth={60} count={3500} factor={6} saturation={0.5} fade speed={1.5} />}
 
+      {/* Realistic Earth Sphere */}
       <Sphere args={[radius, 64, 64]}>
-        <MeshDistortMaterial
-          color={isDark ? "#1E293B" : "#E2E8F0"}
-          emissive={isDark ? "#0F172A" : "#FFFFFF"}
-          wireframe={true}
-          distort={0.1}
-          speed={1}
-          transparent
-          opacity={0.3}
+        <meshStandardMaterial
+          map={isDark ? textures.night : textures.day}
+          roughness={0.4}
+          metalness={0.1}
         />
       </Sphere>
 
-      {/* Inner solid sphere */}
-      <Sphere args={[radius - 0.02, 64, 64]}>
-        <meshStandardMaterial 
-          color={isDark ? "#020617" : "#F8FAFC"}
-          roughness={0.8}
+      {/* Independently Rotating Atmospheric Cloud Layer */}
+      <mesh ref={cloudsRef}>
+        <sphereGeometry args={[radius + 0.02, 64, 64]} />
+        <meshStandardMaterial
+          alphaMap={textures.clouds}
+          transparent
+          color="#ffffff"
+          opacity={0.35}
+          depthWrite={false}
         />
-      </Sphere>
+      </mesh>
 
       {/* Location Marker */}
       {markerPosition && (
         <group position={markerPosition}>
+          {/* Glowing core */}
           <Sphere args={[0.08, 16, 16]}>
-            <meshBasicMaterial color="#3B82F6" />
+            <meshBasicMaterial color="#ef4444" />
           </Sphere>
-          <Sphere args={[0.12, 16, 16]}>
-            <meshBasicMaterial color="#3B82F6" transparent opacity={0.4} />
+          {/* Pulsing ring */}
+          <Sphere args={[0.15, 16, 16]}>
+            <meshBasicMaterial color="#ef4444" transparent opacity={0.3} />
           </Sphere>
           <Html center distanceFactor={15}>
             <div className="flex items-center gap-2 pointer-events-none">
-              <div className="w-3 h-3 bg-blue-500 rounded-full animate-ping" />
-              <div className="px-2 py-1 bg-black/50 backdrop-blur-md rounded border border-blue-500/30 text-white text-xs font-bold whitespace-nowrap">
-                {location?.name || "Your Location"}
+              <div className="w-3.5 h-3.5 bg-red-500 rounded-full animate-ping" />
+              <div 
+                className="px-2.5 py-1 rounded-md text-white text-xs font-bold whitespace-nowrap shadow-lg"
+                style={{
+                  background: "rgba(15, 23, 42, 0.85)",
+                  border: "1px solid rgba(239, 68, 68, 0.5)",
+                  backdropFilter: "blur(4px)"
+                }}
+              >
+                📍 {location?.name || "Your Location"}
               </div>
             </div>
           </Html>
