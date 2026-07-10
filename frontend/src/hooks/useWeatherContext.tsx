@@ -78,22 +78,55 @@ export function WeatherProvider({ children }: { children: ReactNode }) {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         async (position) => {
-          // We got GPS coords — reverse geocode via Open-Meteo is not supported,
-          // so we just use the coords directly with a generic label
-          const gpsLocation: GeoLocation = {
-            id: 0,
-            name: "Current Location",
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude,
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          };
-          setLocationState(gpsLocation);
+          const { latitude, longitude } = position.coords;
+          const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+          
+          try {
+            // Use Nominatim open geocoding for free client-side reverse lookup
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=en`,
+              {
+                headers: {
+                  "User-Agent": "WeatherAI-Platform"
+                }
+              }
+            );
+            
+            if (res.ok) {
+              const data = await res.json();
+              const address = data.address;
+              const cityName = address.city || address.town || address.village || address.suburb || address.county || "Current Location";
+              
+              const gpsLocation: GeoLocation = {
+                id: 0,
+                name: cityName,
+                latitude,
+                longitude,
+                timezone: localTimezone,
+                country: address.country,
+                country_code: address.country_code?.toUpperCase(),
+              };
+              setLocationState(gpsLocation);
+            } else {
+              throw new Error("Reverse geocode failed");
+            }
+          } catch (e) {
+            console.error("Reverse geocoding failed, falling back to coordinates:", e);
+            const gpsLocation: GeoLocation = {
+              id: 0,
+              name: "Current Location",
+              latitude,
+              longitude,
+              timezone: localTimezone,
+            };
+            setLocationState(gpsLocation);
+          }
         },
-        () => {
-          // GPS denied — use default location
-          console.log("GPS denied, using default location");
+        (error) => {
+          // GPS denied or failed — use default location
+          console.warn("GPS lookup failed:", error.message);
         },
-        { timeout: 5000 }
+        { timeout: 8000, enableHighAccuracy: true }
       );
     }
   }, []);
