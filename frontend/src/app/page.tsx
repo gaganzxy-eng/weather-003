@@ -13,9 +13,14 @@ import WeatherMetrics from "@/components/weather/WeatherMetrics";
 import HourlyForecast from "@/components/weather/HourlyForecast";
 import DailyForecast from "@/components/weather/DailyForecast";
 import WeatherCharts from "@/components/charts/WeatherCharts";
-import WeatherEnvironment from "@/components/3d/WeatherEnvironment";
 import AIInsights from "@/components/predictions/AIInsights";
 import WeatherChatbot from "@/components/chat/WeatherChatbot";
+import dynamic from "next/dynamic";
+
+// Dynamically import 3D canvas with SSR disabled to prevent Node server crashes
+const WeatherEnvironment = dynamic(() => import("@/components/3d/WeatherEnvironment"), {
+  ssr: false,
+});
 
 export default function DashboardPage() {
   return (
