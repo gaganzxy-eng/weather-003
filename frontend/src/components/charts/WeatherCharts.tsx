@@ -5,7 +5,7 @@
  * Tabbed chart panel with ECharts for temperature, humidity, wind, pressure, rain, UV, and AQI.
  */
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
 import { useWeather } from "@/hooks/useWeatherContext";
@@ -29,8 +29,13 @@ const TABS: { key: ChartTab; label: string; emoji: string }[] = [
 export default function WeatherCharts() {
   const [activeTab, setActiveTab] = useState<ChartTab>("temperature");
   const { weather, airQuality, loading, unit } = useWeather();
+  const [mounted, setMounted] = useState(false);
 
-  if (loading || !weather?.hourly) {
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (loading || !weather?.hourly || !mounted) {
     return <ChartSkeleton />;
   }
 
