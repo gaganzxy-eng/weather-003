@@ -56,9 +56,8 @@ export default function Header() {
       {/* Controls & User Profile */}
       <div className="flex items-center gap-3 md:gap-4">
         {/* User Profile */}
-        <div className="hidden md:flex flex-col items-end mr-2">
+        <div className="hidden md:flex items-center mr-2">
           <span className="text-sm font-semibold">R.Gagan Surya Teja</span>
-          <span className="text-xs text-blue-400">Pro Member</span>
         </div>
 
         <div className="flex items-center gap-2">

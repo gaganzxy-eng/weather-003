@@ -15,17 +15,10 @@ import DailyForecast from "@/components/weather/DailyForecast";
 import WeatherCharts from "@/components/charts/WeatherCharts";
 import AIInsights from "@/components/predictions/AIInsights";
 import WeatherChatbot from "@/components/chat/WeatherChatbot";
-import dynamic from "next/dynamic";
-
-// Dynamically import 3D canvas with SSR disabled to prevent Node server crashes
-const WeatherEnvironment = dynamic(() => import("@/components/3d/WeatherEnvironment"), {
-  ssr: false,
-});
 
 export default function DashboardPage() {
   return (
     <WeatherProvider>
-      <WeatherEnvironment />
       <div
         className="min-h-screen relative"
         style={{ padding: "0.75rem", maxWidth: 1400, margin: "0 auto", zIndex: 1 }}
