@@ -12,10 +12,15 @@ export default function AIInsights() {
   const { weather, airQuality, loading } = useWeather();
   const [insight, setInsight] = useState<string | null>(null);
   const [isFetching, setIsFetching] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     async function getInsight() {
-      if (!weather?.current || loading) return;
+      if (!weather?.current || loading || !mounted) return;
       
       setIsFetching(true);
       try {
@@ -45,7 +50,7 @@ export default function AIInsights() {
     getInsight();
   }, [weather, loading, airQuality]);
 
-  if (loading) return null;
+  if (loading || !mounted) return null;
 
   return (
     <Tilt 
