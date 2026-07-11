@@ -10,7 +10,11 @@ export const metadata: Metadata = {
     "weather", "forecast", "AI", "machine learning", "predictions",
     "temperature", "rain", "air quality", "weather dashboard",
   ],
-  authors: [{ name: "Weather AI" }],
+  authors: [{ name: "R.Gagan Surya Teja" }],
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
   openGraph: {
     title: "Weather AI — Intelligent Weather Forecasting",
     description: "AI-powered weather dashboard with real-time data, ML predictions, and interactive charts.",

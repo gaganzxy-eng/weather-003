@@ -36,12 +36,13 @@ export default function Header() {
       {/* Logo */}
       <div className="flex items-center gap-2">
         <div
-          className="p-1.5 rounded-lg"
+          className="rounded-lg overflow-hidden"
           style={{
-            background: "linear-gradient(135deg, #3B82F6, #8B5CF6)",
+            width: 36,
+            height: 36,
           }}
         >
-          <span className="text-lg">🌦️</span>
+          <img src="/logo.png" alt="Weather AI" width={36} height={36} style={{ objectFit: "cover" }} />
         </div>
         <div>
           <h1 className="text-lg font-bold tracking-tight text-gradient">
