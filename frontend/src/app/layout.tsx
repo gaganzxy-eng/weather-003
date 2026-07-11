@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ThemeProvider from "@/components/layout/ThemeProvider";
-import WeatherEnvironment from "@/components/3d/WeatherEnvironment";
 
 export const metadata: Metadata = {
   title: "Weather AI — Intelligent Weather Forecasting Platform",
